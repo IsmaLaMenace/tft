@@ -1,0 +1,50 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>TFT Rush Dashboard</title>
+  <style>
+    body { background:#0f172a; color:white; font-family:Arial; padding:20px; }
+    .card { background:#1e293b; padding:15px; border-radius:10px; margin:10px; }
+  </style>
+</head>
+<body>
+  <h1>TFT Rush – Dashboard</h1>
+  <div id="root">Loading...</div>
+
+  <script>
+    const players = [
+      "TWIX#212",
+      "KC OREGONOO#KCORP",
+      "Youness#etw"
+    ];
+
+    async function load() {
+      const root = document.getElementById("root");
+      root.innerHTML = "";
+      for (const p of players) {
+        const r = await fetch(`/api/player?region=EUW&name=${encodeURIComponent(p)}`);
+        const data = await r.json();
+        const div = document.createElement("div");
+        div.className="card";
+        if (data.error) {
+          div.innerHTML = `<b>${p}</b><br>Erreur: ${data.error}`;
+        } else {
+          const r = data.ranked;
+          const wr = r ? Math.round((r.wins/(r.wins+r.losses))*100) : "?";
+          const history = data.recentMatches.map(m=>`Top ${m.placement}`).join(" • ");
+          div.innerHTML = `
+            <b>${data.summoner.name}</b><br>
+            Rang: ${r?tier=r.tier+" "+r.leaguePoints+"LP": "?"}<br>
+            Winrate: ${wr}%<br>
+            Hist: ${history}
+          `;
+        }
+        root.appendChild(div);
+      }
+    }
+    load();
+  </script>
+</body>
+</html>
